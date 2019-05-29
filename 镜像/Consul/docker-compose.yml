@@ -1,0 +1,62 @@
+version: "2"
+services:
+ web:
+  image: zwffff/nginx-consultemplate
+  container_name: consultemplate
+  networks:
+   consul_testconsul:
+    ipv4_address: 172.12.0.2
+  depends_on:
+   - consul
+  ports:
+   - "8000:8000"
+
+ consul:
+  image: zwffff/consul
+  command: consul agent -server -bootstrap -ui -data-dir=/var/lib/consul-data -bind=172.12.0.3 -client=0.0.0.0 -node=server01
+  networks:
+   consul_testconsul:
+     ipv4_address: 172.12.0.3
+  container_name: consulserver
+  ports:
+    - "8300"
+    - "8301"
+    - "8301/udp"
+    - "8302"
+    - "8302/udp"
+    - "8500"
+    - "8602"
+    - "8600/udp"
+    - "80"
+ 
+ registrator:
+  image: gliderlabs/registrator:latest
+  container_name: registrator
+  network_mode: host
+  command: --ip 192.168.1.92 consul://172.12.0.3:8500
+  depends_on:
+    - web
+  volumes: 
+      -  /var/run/docker.sock:/tmp/docker.sock
+  restart: always
+
+ nginx1:
+   image: nginx
+   container_name: nginx_81
+   depends_on:
+     - registrator
+   ports:
+     - "81:80"
+  
+ nginx2:
+   image: nginx
+   container_name: nginx_82
+   depends_on:
+     - registrator
+   ports:
+     - "82:80"
+     
+networks:
+ consul_testconsul:
+  external: true
+
