@@ -1,0 +1,11 @@
+version: "2"
+services:
+  registry: 
+    image: registry:2
+    container_name: docker_registry
+    restart: always
+    ports:
+      - "8083:5000"
+    volumes:
+      - /root/kk/dockerRegistry/data:/var/lib/registry
+      - /root/kk/dockerRegistry/config.yml:/etc/docker/registry/config.yml
